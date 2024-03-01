@@ -278,8 +278,7 @@ public class PixelPropsUtils {
         if (sIsGms) {
             setPropValue("TIME", System.currentTimeMillis());
 
-            if (processName.toLowerCase().contains("chimera")
-                || processName.toLowerCase().contains("unstable")) {
+            if (processName.toLowerCase().contains("unstable")) {
                 spoofBuildGms();
                 return;
             }
@@ -310,11 +309,12 @@ public class PixelPropsUtils {
             }
             if (sIsGms
                 && (processName.toLowerCase().contains("ui")
-                || processName.toLowerCase().contains("gservice")
+                || processName.toLowerCase().contains("chimera")
                 || processName.toLowerCase().contains("gapps")
+                || processName.toLowerCase().contains("gservice")
                 || processName.toLowerCase().contains("learning")
-                || processName.toLowerCase().contains("search")
-                || processName.toLowerCase().contains("persistent"))) {
+                || processName.toLowerCase().contains("persistent")
+                || processName.toLowerCase().contains("search"))) {
                 propsToChange = propsToChangePixel5a;
             }
             // Allow process spoofing for GoogleCamera packages
