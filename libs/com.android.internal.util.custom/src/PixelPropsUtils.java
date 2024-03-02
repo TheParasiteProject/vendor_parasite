@@ -275,13 +275,8 @@ public class PixelPropsUtils {
         sIsFinsky = packageName.equals("com.android.vending");
         sIsSetupWizard = packageName.equals("com.google.android.setupwizard");
 
-        if (sIsGms) {
-            setPropValue("TIME", System.currentTimeMillis());
-
-            if (processName.toLowerCase().contains("unstable")) {
-                spoofBuildGms();
-                return;
-            }
+        if (shouldTryToCertifyDevice()) {
+            return;
         }
 
         if (packagesToKeep.contains(packageName)
@@ -402,6 +397,43 @@ public class PixelPropsUtils {
         }
     }
 
+    private static boolean shouldTryToCertifyDevice() {
+        if (!sIsGms) return false;
+
+        final String processName = Application.getProcessName();
+        if (!processName.toLowerCase().contains("unstable")
+                && !processName.toLowerCase().contains("pixelmigrate")
+                && !processName.toLowerCase().contains("instrumentation")) {
+            return false;
+        }
+
+        setPropValue("TIME", System.currentTimeMillis());
+
+        final boolean was = isGmsAddAccountActivityOnTop();
+        final TaskStackListener taskStackListener = new TaskStackListener() {
+            @Override
+            public void onTaskStackChanged() {
+                final boolean is = isGmsAddAccountActivityOnTop();
+                if (is ^ was) {
+                    dlog("GmsAddAccountActivityOnTop is:" + is + " was:" + was +
+                            ", killing myself!"); // process will restart automatically later
+                    Process.killProcess(Process.myPid());
+                }
+            }
+        };
+        if (!was) {
+            spoofBuildGms();
+        } else {
+            dlog("Skip spoofing build for GMS, because GmsAddAccountActivityOnTop!");
+        }
+        try {
+            ActivityTaskManager.getService().registerTaskStackListener(taskStackListener);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to register task stack listener!", e);
+        }
+        return true;
+    }
+
     private static boolean isGmsAddAccountActivityOnTop() {
         try {
             final ActivityTaskManager.RootTaskInfo focusedTask =
@@ -417,9 +449,15 @@ public class PixelPropsUtils {
     public static boolean shouldBypassTaskPermission(Context context) {
         // GMS doesn't have MANAGE_ACTIVITY_TASKS permission
         final int callingUid = Binder.getCallingUid();
-        final String callingPackage = context.getPackageManager().getNameForUid(callingUid);
-        dlog("shouldBypassTaskPermission: callingPackage:" + callingPackage);
-        return callingPackage != null && callingPackage.toLowerCase().contains("google");
+        final int gmsUid;
+        try {
+            gmsUid = context.getPackageManager().getApplicationInfo("com.google.android.gms", 0).uid;
+            dlog("shouldBypassTaskPermission: gmsUid:" + gmsUid + " callingUid:" + callingUid);
+        } catch (Exception e) {
+            Log.e(TAG, "shouldBypassTaskPermission: unable to get gms uid", e);
+            return false;
+        }
+        return gmsUid == callingUid;
     }
 
     private static boolean isCallerSafetyNet() {
