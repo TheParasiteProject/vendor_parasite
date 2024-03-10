@@ -56,7 +56,7 @@ public class CustomFeaturesUtils {
             "android.software.freeform_window_management"
     };
 
-    public int hasSystemFeatureCustom(String name) {
+    public static int hasSystemFeatureCustom(String name) {
         String packageName = ActivityThread.currentPackageName();
         if (packageName != null
                 && packageName.equals("com.google.android.apps.photos")
