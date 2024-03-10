@@ -1,6 +1,7 @@
 package com.android.internal.util.custom;
 
 import android.app.ActivityThread;
+import android.os.SystemProperties;
 
 import java.util.Arrays;
 
