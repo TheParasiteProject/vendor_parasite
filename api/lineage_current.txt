@@ -1,0 +1,72 @@
+package lineageos.platform {
+
+  public final class Manifest {
+    ctor public Manifest();
+  }
+
+  public static final class Manifest.permission {
+    ctor public Manifest.permission();
+    field public static final java.lang.String HARDWARE_ABSTRACTION_ACCESS = "lineageos.permission.HARDWARE_ABSTRACTION_ACCESS";
+    field public static final java.lang.String MANAGE_LIVEDISPLAY = "lineageos.permission.MANAGE_LIVEDISPLAY";
+    field public static final java.lang.String MANAGE_REMOTE_PREFERENCES = "lineageos.permission.MANAGE_REMOTE_PREFERENCES";
+    field public static final java.lang.String MODIFY_PROFILES = "lineageos.permission.MODIFY_PROFILES";
+    field public static final java.lang.String TRUST_INTERFACE = "lineageos.permission.TRUST_INTERFACE";
+    field public static final java.lang.String WRITE_SECURE_SETTINGS = "lineageos.permission.WRITE_SECURE_SETTINGS";
+    field public static final java.lang.String WRITE_SETTINGS = "lineageos.permission.WRITE_SETTINGS";
+  }
+
+  public final class R {
+    ctor public R();
+  }
+
+  public static final class R.anim {
+    ctor public R.anim();
+  }
+
+  public static final class R.array {
+    ctor public R.array();
+  }
+
+  public static final class R.attr {
+    ctor public R.attr();
+    field public static final int minSummaryLines = 1057030154; // 0x3f01000a
+    field public static final int replacesKey = 1057030153; // 0x3f010009
+    field public static final int requiresAction = 1057030152; // 0x3f010008
+    field public static final int requiresConfig = 1057030148; // 0x3f010004
+    field public static final int requiresConfigMask = 1057030155; // 0x3f01000b
+    field public static final int requiresFeature = 1057030147; // 0x3f010003
+    field public static final int requiresOwner = 1057030150; // 0x3f010006
+    field public static final int requiresPackage = 1057030146; // 0x3f010002
+    field public static final int requiresProperty = 1057030149; // 0x3f010005
+    field public static final int xmlRes = 1057030151; // 0x3f010007
+  }
+
+  public static final class R.bool {
+    ctor public R.bool();
+  }
+
+  public static final class R.color {
+    ctor public R.color();
+  }
+
+  public static final class R.dimen {
+    ctor public R.dimen();
+  }
+
+  public static final class R.drawable {
+    ctor public R.drawable();
+  }
+
+  public static final class R.integer {
+    ctor public R.integer();
+  }
+
+  public static final class R.string {
+    ctor public R.string();
+  }
+
+  public static final class R.xml {
+    ctor public R.xml();
+  }
+
+}

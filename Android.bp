@@ -1,0 +1,26 @@
+// Dummy library
+// ============================================================
+
+java_library {
+    name: "org.lineageos.platform",
+    installable: true,
+    sdk_version: "core_platform",
+    static_libs: [
+        "org.lineageos.platform.internal"
+    ],
+
+    srcs: [
+        "sdk/src/org/lineageos/platform/*.java",
+    ],
+}
+
+java_library {
+    name: "org.lineageos.platform.internal",
+
+    srcs: [
+        "sdk/src/org/lineageos/platform/internal/*.java",
+
+        // For the generated R.java and Manifest.java
+        ":org.lineageos.platform-res{.aapt.srcjar}",
+    ],
+}
