@@ -36,5 +36,13 @@ if [ -d "kernel/modules/misc/Kprofiles" ]; then
     cd ../../../../
 fi
 
+# Enable auto kprofiles for QGKI kernels
+# Ref: https://github.com/dakkshesh07/Kprofiles/pull/16/commits/f8de35bcc51fb29988ccab31cdfad7923b475b6e
+if [ -d "kernel/modules/misc/Kprofiles" ]; then
+    cd kernel/modules/misc/Kprofiles
+    sed -i 's/depends on DRM_MSM/depends on DRM_MSM || QGKI/g' Kconfig
+    cd ../../../../
+fi
+
 export VENDOR_PARASITE_SETUP_DONE=true
 fi
