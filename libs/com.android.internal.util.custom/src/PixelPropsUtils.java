@@ -59,6 +59,9 @@ public class PixelPropsUtils {
     private static final String TAG = PixelPropsUtils.class.getSimpleName();
     private static final boolean DEBUG = false;
 
+    private static final String sDeviceModel =
+            SystemProperties.get("ro.product.model", Build.MODEL);
+
     private static final Boolean sEnablePixelProps =
             SystemProperties.getBoolean("persist.sys.pihooks.enable", true);
 
@@ -98,8 +101,6 @@ public class PixelPropsUtils {
     private static final ArrayList<String> packagesToChangeRecentPixel = 
         new ArrayList<String> (
             Arrays.asList(
-                "com.android.chrome",
-                "com.breel.wallpapers20",
                 "com.google.android.apps.aiwallpapers",
                 "com.google.android.apps.bard",
                 "com.google.android.apps.customization.pixel",
@@ -108,22 +109,26 @@ public class PixelPropsUtils {
                 "com.google.android.apps.photos",
                 "com.google.android.apps.privacy.wildlife",
                 "com.google.android.apps.subscriptions.red",
-                "com.google.android.apps.wallpaper.pixel",
                 "com.google.android.apps.wallpaper",
-                "com.google.android.gms",
+                "com.google.android.apps.wallpaper.pixel",
+                "com.google.android.gms.ui",
+                "com.google.android.gms.learning",
+                "com.google.android.gms.persistent",
                 "com.google.android.googlequicksearchbox",
                 "com.google.android.wallpaper.effects",
-                "com.google.pixel.livewallpaper",
-                "com.nhs.online.nhsonline"
+                "com.google.pixel.livewallpaper"
         ));
 
     private static final ArrayList<String> extraPackagesToChange = 
         new ArrayList<String> (
             Arrays.asList(
                 "com.amazon.avod.thirdpartyclient",
+                "com.android.chrome",
+                "com.breel.wallpapers20",
                 "com.disney.disneyplus",
                 "com.microsoft.android.smsorganizer",
                 "com.netflix.mediaclient",
+                "com.nhs.online.nhsonline",
                 "com.nothing.smartcenter",
                 "in.startv.hotstar",
                 "jp.id_credit_sp2.android"
@@ -157,6 +162,7 @@ public class PixelPropsUtils {
                 "com.google.android.backuptransport",
                 "com.google.android.backupuses",
                 "com.google.android.euicc",
+                "com.google.android.gms.update",
                 "com.google.android.inputmethod.latin",
                 "com.google.android.youtube",
                 "com.google.ar.core",
@@ -171,7 +177,7 @@ public class PixelPropsUtils {
     private static final ComponentName GMS_ADD_ACCOUNT_ACTIVITY = ComponentName.unflattenFromString(
             "com.google.android.gms/.auth.uiflows.minutemaid.MinuteMaidActivity");
 
-    private static volatile boolean sIsGms, sIsSetupWizard, sIsGoogle;
+    private static volatile boolean sIsGmsUnstable, sIsGoogle;
 
     private static String getBuildID(String fingerprint) {
         Pattern pattern = Pattern.compile("([A-Za-z0-9]+\\.\\d+\\.\\d+\\.\\w+)");
@@ -263,16 +269,20 @@ public class PixelPropsUtils {
         propsToChangeGeneric.forEach((k, v) -> setPropValue(k, v));
 
         final boolean sIsTablet = isDeviceTablet(context);
-        sIsGoogle = packageName.toLowerCase().contains("google") || processName.toLowerCase().contains("google");
-        sIsGms = packageName.equals("com.google.android.gms");
-        sIsSetupWizard = packageName.equals("com.google.android.setupwizard");
+        sIsGoogle = processName.toLowerCase().contains("google")
+                    || packageName.toLowerCase().contains("google");
+        sIsGmsUnstable = processName.equals("com.google.android.gms.unstable");
+
+        if ("com.google.android.gms".equals(packageName)) {
+            setPropValue("TIME", System.currentTimeMillis());
+        }
 
         if (shouldTryToCertifyDevice()) {
             return;
         }
 
-        if (packagesToKeep.contains(packageName)
-            || packagesToKeep.contains(processName)) {
+        if (packagesToKeep.contains(processName)
+            || packagesToKeep.contains(packageName)) {
             return;
         }
 
@@ -282,26 +292,18 @@ public class PixelPropsUtils {
 
         if (setPropsForGphotos(context)) {
             return;
-        } 
+        }
 
         Map<String, Object> propsToChange = new HashMap<>();
         if (sIsGoogle
-            || extraPackagesToChange.contains(packageName)
-            || extraPackagesToChange.contains(processName)) {
+            || extraPackagesToChange.contains(processName)
+            || extraPackagesToChange.contains(packageName)) {
 
-            if (packagesToChangeRecentPixel.contains(packageName)
-                || packagesToChangeRecentPixel.contains(processName)) {
+            if (packagesToChangeRecentPixel.contains(processName)
+                || packagesToChangeRecentPixel.contains(packageName)) {
                 propsToChange = propsToChangeRecentPixel;
             } else if (sIsTablet) {
                 propsToChange = propsToChangePixelTablet;
-            }
-            if (sIsGms && (!sDeviceIsPixel || sForceSpoofGmsToPixel)
-                && (processName.toLowerCase().contains("gapps")
-                || processName.toLowerCase().contains("gservice")
-                || processName.toLowerCase().contains("learning")
-                || processName.toLowerCase().contains("persistent")
-                || processName.toLowerCase().contains("search"))) {
-                propsToChange = propsToChangePixel5a;
             }
         }
         if (propsToChange == null || propsToChange.isEmpty()) return;
@@ -316,12 +318,17 @@ public class PixelPropsUtils {
             dlog("Defining " + key + " prop for: " + packageName);
             setPropValue(key, value);
         }
+        // Show correct model name on gms services
+        if ("com.google.android.gms.ui".equals(processName)) {
+            setPropValue("MODEL", sDeviceModel);
+            return;
+        }
         // Set proper indexing fingerprint
-        if (packageName.equals("com.google.android.settings.intelligence")) {
+        if ("com.google.android.settings.intelligence".equals(packageName)) {
             setPropValue("FINGERPRINT", Build.VERSION.INCREMENTAL);
             return;
         }
-        if (!TextUtils.isEmpty(sNetflixModel) && packageName.equals("com.netflix.mediaclient")) {
+        if (!TextUtils.isEmpty(sNetflixModel) && "com.netflix.mediaclient".equals(packageName)) {
             dlog("Setting model to " + sNetflixModel + " for Netflix");
             setPropValue("MODEL", sNetflixModel);
             return;
@@ -385,14 +392,7 @@ public class PixelPropsUtils {
     }
 
     private static boolean shouldTryToCertifyDevice() {
-        if (!sIsGms) return false;
-
-        final String processName = Application.getProcessName();
-        if (!processName.toLowerCase().contains("unstable")) {
-            return false;
-        }
-
-        setPropValue("TIME", System.currentTimeMillis());
+        if (!sIsGmsUnstable) return false;
 
         if (Android.isCertifiedPropsEmpty()) return false;
 
